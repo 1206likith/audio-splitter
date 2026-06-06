@@ -115,6 +115,20 @@ jobs:
           if [ ! -f "ios/Runner.xcodeproj/project.pbxproj" ]; then
             flutter create . --platforms=ios
           fi
+          # firebase_crashlytics 3.5.7 uses non-modular headers; allow them under Xcode 16+
+          python3 - <<'PYEOF'
+with open('ios/Podfile', 'r') as f:
+    c = f.read()
+fix = "      config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'\n"
+marker = 'flutter_additional_ios_build_settings(target)'
+if marker in c and 'CLANG_ALLOW_NON_MODULAR' not in c:
+    c = c.replace(marker, marker + '\n' + fix)
+    with open('ios/Podfile', 'w') as f:
+        f.write(c)
+    print('Patched Podfile for non-modular headers')
+else:
+    print('Podfile already patched or marker not found')
+PYEOF
           flutter build ios --no-codesign --debug
 
       - name: Upload iOS artifact
