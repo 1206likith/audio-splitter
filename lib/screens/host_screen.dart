@@ -222,16 +222,14 @@ class _HostScreenState extends State<HostScreen> {
           child: OutlinedButton.icon(
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute(
-                  builder: (_) => const RecordingScreen()),
+              MaterialPageRoute(builder: (_) => const RecordingScreen()),
             ),
             icon: streaming.isMultiStemRecording
                 ? const Icon(Icons.fiber_manual_record,
                     color: Colors.red, size: 18)
                 : const Icon(Icons.radio_button_unchecked, size: 18),
-            label: Text(streaming.isMultiStemRecording
-                ? 'Recording…'
-                : 'Record'),
+            label:
+                Text(streaming.isMultiStemRecording ? 'Recording…' : 'Record'),
           ),
         ),
         const SizedBox(width: 12),

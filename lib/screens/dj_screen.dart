@@ -87,9 +87,11 @@ class _DjScreenState extends State<DjScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(child: _buildDeckCard('A', _tracks[0], _bpmA, _killsA)),
+                Expanded(
+                    child: _buildDeckCard('A', _tracks[0], _bpmA, _killsA)),
                 const SizedBox(width: 12),
-                Expanded(child: _buildDeckCard('B', _tracks[1], _bpmB, _killsB)),
+                Expanded(
+                    child: _buildDeckCard('B', _tracks[1], _bpmB, _killsB)),
               ],
             ),
           ),
@@ -144,8 +146,8 @@ class _DjScreenState extends State<DjScreen> {
                     grid != null
                         ? '${grid.bpm.toStringAsFixed(1)} BPM'
                         : 'No grid — tap "Set" to stamp a manual downbeat',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant),
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -285,9 +287,8 @@ class _DjScreenState extends State<DjScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Deck A',
-                          style: theme.textTheme.labelSmall
-                              ?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant)),
+                          style: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant)),
                       Slider(
                         value: _bpmA,
                         min: 60,

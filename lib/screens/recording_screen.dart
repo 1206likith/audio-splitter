@@ -88,12 +88,9 @@ class _RecordingScreenState extends State<RecordingScreen> {
         includeReaper: true,
         includeAbleton: true,
       );
-      final safeName =
-          session.name.replaceAll(RegExp(r'[^\w\-]'), '_').substring(
-              0,
-              session.name.length < 40
-                  ? session.name.length
-                  : 40);
+      final safeName = session.name
+          .replaceAll(RegExp(r'[^\w\-]'), '_')
+          .substring(0, session.name.length < 40 ? session.name.length : 40);
       final savedPath = await file_io.saveBytes('$safeName.zip', zipBytes);
       if (mounted) setState(() => _savedPath = savedPath);
     } catch (e) {
@@ -157,9 +154,7 @@ class _RecordingScreenState extends State<RecordingScreen> {
         child: Column(
           children: [
             Icon(
-              isRecording
-                  ? MdiIcons.radioboxMarked
-                  : MdiIcons.radioboxBlank,
+              isRecording ? MdiIcons.radioboxMarked : MdiIcons.radioboxBlank,
               size: 48,
               color: isRecording
                   ? theme.colorScheme.error
@@ -371,8 +366,8 @@ class _ConsentTile extends StatelessWidget {
         Icon(Icons.check_circle, color: theme.colorScheme.primary, size: 18),
       ConsentState.denied =>
         Icon(Icons.cancel, color: theme.colorScheme.error, size: 18),
-      ConsentState.unknown =>
-        Icon(Icons.help_outline, color: theme.colorScheme.onSurfaceVariant, size: 18),
+      ConsentState.unknown => Icon(Icons.help_outline,
+          color: theme.colorScheme.onSurfaceVariant, size: 18),
     };
     final label = switch (state) {
       ConsentState.granted => 'Granted',

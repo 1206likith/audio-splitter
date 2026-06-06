@@ -13,7 +13,8 @@ void main() {
     expect(find.text('Client'), findsOneWidget);
   });
 
-  testWidgets('Can navigate to Host screen and select Media File source', (tester) async {
+  testWidgets('Can navigate to Host screen and select Media File source',
+      (tester) async {
     await tester.pumpWidget(const app.AudioSplitterApp());
     await tester.pumpAndSettle();
 

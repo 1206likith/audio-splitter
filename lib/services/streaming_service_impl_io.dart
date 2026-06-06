@@ -381,8 +381,7 @@ class StreamingService with ChangeNotifier {
   // --- ASP-2 public API ---------------------------------------------------
 
   /// The current role of a connected client (default: listener).
-  Role clientRole(String clientId) =>
-      _clientRoles[clientId] ?? Role.listener;
+  Role clientRole(String clientId) => _clientRoles[clientId] ?? Role.listener;
 
   /// Whether [clientId] is permitted to perform [cap].
   bool canClientDo(String clientId, Capability cap) =>
@@ -1046,7 +1045,10 @@ class StreamingService with ChangeNotifier {
     if (rec != null) {
       rec.write(
         'master',
-        PcmChunk(pcm: audioData, presentationTsUs: tsUs, format: AudioFormat.cdStereo),
+        PcmChunk(
+            pcm: audioData,
+            presentationTsUs: tsUs,
+            format: AudioFormat.cdStereo),
       );
     }
 

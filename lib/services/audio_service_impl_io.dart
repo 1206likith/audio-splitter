@@ -406,7 +406,8 @@ class AudioService {
   /// Non-WAV streaming is not supported without the FFmpeg native library.
   /// Only WAV files are supported for network streaming.
   Future<void> _convertAndStreamNonWav(String filePath) async {
-    debugPrint('[AudioService] Non-WAV file streaming requires FFmpeg (not available). Only .wav files can be streamed. filePath=$filePath');
+    debugPrint(
+        '[AudioService] Non-WAV file streaming requires FFmpeg (not available). Only .wav files can be streamed. filePath=$filePath');
     _isRecording = false;
   }
 
@@ -494,7 +495,8 @@ class AudioService {
 
   /// HLS relay requires FFmpeg (not available). This is a no-op stub.
   Future<void> _streamRelayLoop(String url, String tmpDir) async {
-    debugPrint('[AudioService] HLS relay requires FFmpeg (not available). url=$url');
+    debugPrint(
+        '[AudioService] HLS relay requires FFmpeg (not available). url=$url');
     _streamRelayActive = false;
     await stopRecording();
   }
