@@ -116,7 +116,7 @@ jobs:
             flutter create . --platforms=ios
           fi
           if ! grep -q 'CLANG_ALLOW_NON_MODULAR' ios/Podfile; then
-            perl -i -pe 's/flutter_additional_ios_build_settings\(target\)/flutter_additional_ios_build_settings(target)\n      config.build_settings["CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES"] = "YES"/' ios/Podfile
+            perl -i -pe 's/(target\.build_configurations\.each do \|config\|)/$1\n      config.build_settings["CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES"] = "YES"/' ios/Podfile
           fi
           flutter build ios --no-codesign --debug
 
