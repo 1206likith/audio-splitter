@@ -92,7 +92,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-runner
-          path: build/windows/runner/Release/**
+          path: build/windows/x64/runner/Release/**
 
       - name: Build macOS app
         if: matrix.target == 'macos'
@@ -111,7 +111,9 @@ jobs:
 
       - name: Build iOS (no-codesign)
         if: matrix.target == 'ios'
-        run: flutter build ios --no-codesign --debug
+        run: |
+          if [ ! -d "ios" ]; then flutter create . --platforms=ios; fi
+          flutter build ios --no-codesign --debug
 
       - name: Upload iOS artifact
         if: matrix.target == 'ios'
