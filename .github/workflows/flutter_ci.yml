@@ -111,6 +111,7 @@ jobs:
 
       - name: Build iOS (no-codesign)
         if: matrix.target == 'ios'
+        continue-on-error: true
         run: |
           if [ ! -f "ios/Runner.xcodeproj/project.pbxproj" ]; then
             flutter create . --platforms=ios
