@@ -56,7 +56,6 @@ class AudioService {
   model.AudioQuality _currentQuality = model.AudioQuality.high;
 
   // HLS relay state (Task 3)
-  bool _streamRelayActive = false;
   String _streamingUrl = '';
 
   // Getters
@@ -268,9 +267,6 @@ class AudioService {
           await _systemAudioControl.invokeMethod('stopCapture');
         } catch (_) {}
       }
-
-      // Stop HLS relay loop if active (Task 3)
-      _streamRelayActive = false;
 
       _isRecording = false;
       await _mediaFileTimerSub?.cancel();
@@ -488,7 +484,6 @@ class AudioService {
       return;
     }
     final dir = await getTemporaryDirectory();
-    _streamRelayActive = true;
     // Run the chunk loop without awaiting so startRecording returns promptly.
     _streamRelayLoop(url, dir.path);
   }
@@ -497,7 +492,6 @@ class AudioService {
   Future<void> _streamRelayLoop(String url, String tmpDir) async {
     debugPrint(
         '[AudioService] HLS relay requires FFmpeg (not available). url=$url');
-    _streamRelayActive = false;
     await stopRecording();
   }
 
@@ -544,8 +538,9 @@ class AudioService {
   bool get isPlaylistMode => _isPlaylistMode;
 
   String? get currentTrackName {
-    if (_playlist.isEmpty)
+    if (_playlist.isEmpty) {
       return _selectedMediaFilePath?.split(RegExp(r'[/\\]')).last;
+    }
     return _playlist[_playlistIndex].split(RegExp(r'[/\\]')).last;
   }
 
