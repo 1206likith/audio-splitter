@@ -1,0 +1,119 @@
+name: Flutter CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Fast gate: format, static analysis, and the full test suite (including the
+  # ASP-2 frame golden-bytes lock). Builds below only run if this passes.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Format check
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Flutter analyze
+        run: flutter analyze
+
+      - name: Flutter test
+        run: flutter test
+
+  build:
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: android
+          - os: windows-latest
+            target: windows
+          - os: macos-latest
+            target: macos
+          - os: macos-latest
+            target: ios
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      # Phase 1 prep: cache vendored native binaries (libopus/libsodium) keyed
+      # on the third_party manifest so FFI builds don't re-download per run.
+      - name: Cache native binaries
+        uses: actions/cache@v4
+        with:
+          path: |
+            third_party
+            android/app/src/main/jniLibs
+          key: native-${{ matrix.target }}-${{ hashFiles('third_party/**/*.lock', 'third_party/README.md') }}
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build Android APK (debug)
+        if: matrix.target == 'android'
+        run: flutter build apk --debug
+
+      - name: Upload Android artifact
+        if: matrix.target == 'android'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk-debug
+          path: build/app/outputs/flutter-apk/app-debug.apk
+
+      - name: Build Windows app
+        if: matrix.target == 'windows'
+        run: flutter build windows --release
+
+      - name: Upload Windows artifact
+        if: matrix.target == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-runner
+          path: build/windows/runner/Release/**
+
+      - name: Build macOS app
+        if: matrix.target == 'macos'
+        run: |
+          flutter config --enable-macos-desktop
+          # Ensure macOS platform exists
+          if [ ! -d "macos" ]; then flutter create . --platforms=macos; fi
+          flutter build macos --release
+
+      - name: Upload macOS artifact
+        if: matrix.target == 'macos'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-app
+          path: build/macos/Build/Products/Release/**
+
+      - name: Build iOS (no-codesign)
+        if: matrix.target == 'ios'
+        run: flutter build ios --no-codesign --debug
+
+      - name: Upload iOS artifact
+        if: matrix.target == 'ios'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-app-debug
+          path: build/ios/iphoneos/Runner.app

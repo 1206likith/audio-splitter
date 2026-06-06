@@ -1,0 +1,15 @@
+{
+  "_comment": "Cross-stack ASP-2 frame parity vector. The Dart test (test/asp2/web_parity_test.dart) asserts the real Asp2Frame.encode() produces exactly `encodedHex`, which guarantees this fixture matches the canonical wire. The web vitest (test/frame.parity.test.ts) asserts the TypeScript encoder/decoder round-trips to the same bytes. Same fixture, two stacks => genuine parity.",
+  "fields": {
+    "version": 2,
+    "flags": 0,
+    "codecId": 1,
+    "streamId": 7,
+    "sequenceNumber": 16909060,
+    "presentationTsUs": 4886718345,
+    "fecGroupId": 0,
+    "fecIndex": 0,
+    "payloadHex": "deadbeef"
+  },
+  "encodedHex": "2001070004030201896745230100000004000000deadbeef"
+}

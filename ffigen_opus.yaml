@@ -1,0 +1,46 @@
+# ffigen config to regenerate the libopus bindings from the public headers.
+#
+# The committed bindings (lib/asp2/codec/native/opus_bindings.dart) are a small
+# hand-written subset so the codec builds without running the generator. To
+# regenerate the *full* bindings:
+#
+#   1. Put the opus headers under third_party/opus/include/ (opus.h, opus_defines.h,
+#      opus_types.h) — see third_party/README.md.
+#   2. Install LLVM (ffigen needs libclang) and add `ffigen` to dev_dependencies.
+#   3. dart run ffigen --config ffigen_opus.yaml
+#
+# Output goes to a *.g.dart file; opus_codec.dart can then import it instead of
+# the hand-written bindings (they expose the same symbols).
+name: OpusFfi
+description: Generated FFI bindings for libopus.
+output: 'lib/asp2/codec/native/opus_bindings.g.dart'
+headers:
+  entry-points:
+    - 'third_party/opus/include/opus.h'
+  include-directives:
+    - '**opus.h'
+    - '**opus_defines.h'
+    - '**opus_types.h'
+functions:
+  include:
+    - 'opus_encoder_create'
+    - 'opus_encode'
+    - 'opus_encoder_ctl'
+    - 'opus_encoder_destroy'
+    - 'opus_decoder_create'
+    - 'opus_decode'
+    - 'opus_decoder_destroy'
+    - 'opus_strerror'
+    - 'opus_get_version_string'
+macros:
+  include:
+    - 'OPUS_APPLICATION_.*'
+    - 'OPUS_SET_BITRATE_REQUEST'
+    - 'OPUS_OK'
+comments:
+  style: any
+  length: full
+preamble: |
+  // GENERATED FILE — do not edit by hand. Regenerate via:
+  //   dart run ffigen --config ffigen_opus.yaml
+  // ignore_for_file: type=lint, unused_field, unused_element

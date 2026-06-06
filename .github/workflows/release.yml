@@ -1,0 +1,76 @@
+name: Release Binaries
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - run: flutter analyze
+      - name: Build Android APK (unsigned debug)
+        run: flutter build apk --debug
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/app/outputs/flutter-apk/app-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - run: flutter analyze
+      - name: Build Windows (Release)
+        run: flutter build windows --release
+      - name: Archive Windows build
+        shell: pwsh
+        run: |
+          Compress-Archive -Path build/windows/runner/Release/* -DestinationPath windows-release.zip
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            windows-release.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - run: flutter analyze
+      - name: Enable macOS desktop and create platform if missing
+        run: |
+          flutter config --enable-macos-desktop
+          if [ ! -d "macos" ]; then flutter create . --platforms=macos; fi
+      - name: Build macOS (Release)
+        run: flutter build macos --release
+      - name: Archive macOS app bundle
+        run: |
+          cd build/macos/Build/Products/Release
+          ditto -c -k --sequesterRsrc --keepParent *.app macos-app.zip
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/macos/Build/Products/Release/macos-app.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

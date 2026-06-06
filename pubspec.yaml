@@ -1,0 +1,54 @@
+name: audio_splitter_app
+description: A cross-platform audio splitter app that streams audio to multiple devices and Bluetooth headsets.
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  provider: ^6.1.2
+  material_design_icons_flutter: ^7.0.7296
+  flutter_sound: ^9.2.13
+  audio_session: ^0.1.16
+  just_audio: ^0.9.36
+  flutter_blue_plus: ^1.31.16
+  permission_handler: ^11.3.1
+  shared_preferences: ^2.3.2
+  bonsoir: ^5.1.8
+  firebase_core: ^2.27.0
+  firebase_crashlytics: ^3.4.9
+  file_picker: ^11.0.2
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^5.2.3
+  audio_service: ^0.18.15
+  path_provider: ^2.1.5
+  encrypt: ^5.0.3
+  share_plus: ^10.0.0
+  # ASP-2 v2 crypto: pure-Dart ChaCha20-Poly1305-IETF AEAD + X25519 + Ed25519.
+  # Chosen over sodium_libs so the crypto layer needs no vendored native binary
+  # and runs (and unit-tests) on every platform incl. web. Same algorithms; a
+  # native backend can swap in behind CryptoBox later if a perf win is needed.
+  cryptography: ^2.7.0
+  # FFI for the Opus native codec (Phase 1).
+  ffi: ^2.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  integration_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/icons/

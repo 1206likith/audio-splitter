@@ -1,0 +1,24 @@
+{
+  "name": "audio-splitter-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Audio Splitter v2 web client — Vite + TypeScript + Web Audio + Web Crypto PWA, single-stack ASP-2 (WASM Opus + libsodium.js).",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/libsodium-wrappers": "^0.7.14",
+    "typescript": "^5.4.0",
+    "vite": "^5.2.0",
+    "vite-plugin-pwa": "^0.20.0",
+    "vitest": "^1.6.0"
+  },
+  "dependencies": {
+    "libsodium-wrappers": "^0.7.13"
+  }
+}
