@@ -112,7 +112,9 @@ jobs:
       - name: Build iOS (no-codesign)
         if: matrix.target == 'ios'
         run: |
-          if [ ! -d "ios" ]; then flutter create . --platforms=ios; fi
+          if [ ! -f "ios/Runner.xcodeproj/project.pbxproj" ]; then
+            flutter create . --platforms=ios
+          fi
           flutter build ios --no-codesign --debug
 
       - name: Upload iOS artifact
