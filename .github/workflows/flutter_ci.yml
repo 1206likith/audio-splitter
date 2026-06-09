@@ -44,7 +44,7 @@ jobs:
         include:
           - os: ubuntu-latest
             target: android
-          - os: windows-latest
+          - os: windows-2022
             target: windows
           - os: macos-latest
             target: macos
@@ -118,6 +118,9 @@ jobs:
           if [ ! -f "ios/Runner.xcodeproj/project.pbxproj" ]; then
             flutter create . --platforms=ios
           fi
+          # firebase_core 4.x / Firebase iOS SDK 12.x requires iOS 15.0+;
+          # Flutter's generated Podfile defaults to 12.0.
+          sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '15.0'/" ios/Podfile
           flutter build ios --no-codesign --debug
 
       - name: Upload iOS artifact
