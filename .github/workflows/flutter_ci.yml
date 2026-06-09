@@ -118,9 +118,13 @@ jobs:
           if [ ! -f "ios/Runner.xcodeproj/project.pbxproj" ]; then
             flutter create . --platforms=ios
           fi
-          # firebase_core 4.x / Firebase iOS SDK 12.x requires iOS 15.0+;
-          # Flutter's generated Podfile defaults to 12.0.
-          sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '15.0'/" ios/Podfile
+          # firebase_core 4.x / Firebase iOS SDK 12.x requires iOS 15.0+.
+          # Flutter's generated Podfile has the platform line commented out;
+          # perl handles both commented and active variants in one pass.
+          perl -i -pe "s/^#?\\s*platform :ios, .*/platform :ios, '15.0'/" ios/Podfile
+          # Also patch xcodeproj so Xcode's own deployment target agrees.
+          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*/IPHONEOS_DEPLOYMENT_TARGET = 15.0/g' \
+            ios/Runner.xcodeproj/project.pbxproj
           flutter build ios --no-codesign --debug
 
       - name: Upload iOS artifact
