@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 jobs:
   # Fast gate: format, static analysis, and the full test suite (including the
   # ASP-2 frame golden-bytes lock). Builds below only run if this passes.
@@ -111,13 +114,9 @@ jobs:
 
       - name: Build iOS (no-codesign)
         if: matrix.target == 'ios'
-        continue-on-error: true
         run: |
           if [ ! -f "ios/Runner.xcodeproj/project.pbxproj" ]; then
             flutter create . --platforms=ios
-          fi
-          if ! grep -q 'CLANG_ALLOW_NON_MODULAR' ios/Podfile; then
-            perl -i -pe 's/(target\.build_configurations\.each do \|config\|)/$1\n      config.build_settings["CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES"] = "YES"/' ios/Podfile
           fi
           flutter build ios --no-codesign --debug
 
