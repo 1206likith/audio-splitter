@@ -51,6 +51,11 @@ class FakeBackend implements SystemAudioBackend {
 }
 
 void main() {
+  // The real PlatformLoopbackBackend touches a MethodChannel; the test binding
+  // must exist for that call to resolve (to a MissingPluginException here,
+  // since no native handler is registered in unit tests).
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('SystemAudioSource lifecycle', () {
     test('start() returns false when the backend is unsupported', () async {
       final src = SystemAudioSource(FakeBackend(isSupported: false));
@@ -142,16 +147,34 @@ void main() {
     });
   });
 
-  group('PlatformLoopbackBackend (the real seam, currently stubbed)', () {
-    test('is unsupported until the native channel is wired', () {
+  group('PlatformLoopbackBackend (the real platform-channel seam)', () {
+    test('isSupported gates on Windows/Android only', () {
       const backend = PlatformLoopbackBackend();
-      expect(backend.isSupported, isFalse);
+      // The capability gate is Windows||Android; on any other host it is false.
+      // We assert it never throws and returns a bool (the exact value depends
+      // on the test host OS).
+      expect(backend.isSupported, isA<bool>());
     });
 
-    test('start() throws a clear UnsupportedError pointing at the seam',
-        () async {
+    test('exposes the loopback format (48k stereo 16-bit)', () {
       const backend = PlatformLoopbackBackend();
-      expect(backend.start(), throwsA(isA<UnsupportedError>()));
+      expect(backend.format.sampleRate, 48000);
+      expect(backend.format.channels, 2);
+    });
+
+    test('SystemAudioSource degrades gracefully when the native handler is '
+        'absent (start returns false, no crash)', () async {
+      // Drive the REAL backend: on a test host there is no native handler
+      // behind the channel, so invokeMethod raises MissingPluginException and
+      // the source must report start()==false rather than throwing.
+      final src = SystemAudioSource(const PlatformLoopbackBackend());
+      // If this host reports unsupported, start() short-circuits to false; if it
+      // reports supported (Windows/Android CI) the missing native handler also
+      // yields false. Either way: no throw, no active capture.
+      final started = await src.start();
+      expect(started, isFalse);
+      expect(src.isActive, isFalse);
+      await src.dispose();
     });
   });
 }

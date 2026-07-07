@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'dart:typed_data';
+
+import 'package:flutter/services.dart';
 
 import '../../core/contracts/audio_format.dart';
 import '../../core/contracts/i_audio_source.dart';
@@ -34,32 +37,67 @@ abstract class SystemAudioBackend {
   Future<void> stop();
 }
 
-/// The real platform-channel backend. **Stub for now** — the Dart↔native bridge
-/// (a `MethodChannel`/`EventChannel` pair per platform) is not yet wired, so
-/// [isSupported] is false and [start] throws. When the native side lands, this
-/// class flips [isSupported] to a real per-OS capability check and streams
-/// frames off the platform's audio callback. Kept behind the [SystemAudioBackend]
-/// interface so nothing above it changes when that happens.
+/// The real platform-channel backend. Binds the Dart side of the loopback
+/// bridge to the same channels the legacy AudioService already declares
+/// (`com.audiosplitter.app/system_audio` event stream +
+/// `com.audiosplitter.app/system_audio_control` control), so the ONE remaining
+/// piece of work is the native handler behind those channels
+/// (WASAPI loopback on Windows, `AudioPlaybackCapture` via `MediaProjection` on
+/// Android 10+).
+///
+/// [isSupported] is a real per-OS capability gate (Windows + Android today; the
+/// native handler is what makes it actually stream). Where the native side is
+/// absent — every non-Windows/Android platform, and unit tests — the channel is
+/// never invoked and callers degrade to the microphone path with no crash,
+/// exactly like `OpusCodec.tryCreate()` degrades to PCM16.
 class PlatformLoopbackBackend implements SystemAudioBackend {
   const PlatformLoopbackBackend();
+
+  /// Event stream of raw PCM16 loopback frames from native.
+  static const EventChannel _events =
+      EventChannel('com.audiosplitter.app/system_audio');
+
+  /// Start/stop + capability control on the native side.
+  static const MethodChannel _control =
+      MethodChannel('com.audiosplitter.app/system_audio_control');
 
   @override
   AudioFormat get format => AudioFormat.cdStereo;
 
   @override
-  bool get isSupported => false; // TODO(native): WASAPI/MediaProjection/CoreAudio
-
-  @override
-  Future<Stream<Uint8List>> start() async {
-    throw UnsupportedError(
-      'System-audio loopback capture is not yet wired to the native platform '
-      'channel. See third_party/README.md and lib/asp2/sources/'
-      'system_audio_source.dart for the SystemAudioBackend seam to implement.',
-    );
+  bool get isSupported {
+    // Loopback capture is a native feature; only Windows and Android have a
+    // handler planned. Other platforms (and the pure-Dart test host) report
+    // false so the source degrades to mic capture.
+    try {
+      return Platform.isWindows || Platform.isAndroid;
+    } catch (_) {
+      // Platform is unavailable on web / in some test hosts — treat as
+      // unsupported rather than throwing.
+      return false;
+    }
   }
 
   @override
-  Future<void> stop() async {}
+  Future<Stream<Uint8List>> start() async {
+    // Ask native to begin capture; a MissingPluginException here means the
+    // native handler isn't installed on this build — surface it so the source's
+    // start() returns false and the app falls back to the mic.
+    await _control.invokeMethod<void>('start');
+    return _events
+        .receiveBroadcastStream()
+        .map((event) => event is Uint8List ? event : Uint8List(0));
+  }
+
+  @override
+  Future<void> stop() async {
+    try {
+      await _control.invokeMethod<void>('stop');
+    } catch (_) {
+      // Native side already stopped, absent, or the binding isn't available
+      // (unit-test host): stopping is best-effort, so swallow everything.
+    }
+  }
 }
 
 /// [IAudioSource] that streams the device's own system/loopback audio — the
